@@ -29,32 +29,32 @@
 
 objs = bin\ec_base.obj bin\ec_highlevel_func.obj bin\ec_multibinary.obj bin\gf_2vect_dot_prod_avx.obj bin\gf_2vect_dot_prod_avx2.obj bin\gf_2vect_dot_prod_sse.obj bin\gf_2vect_mad_avx.obj bin\gf_2vect_mad_avx2.obj bin\gf_2vect_mad_sse.obj bin\gf_3vect_dot_prod_avx.obj bin\gf_3vect_dot_prod_avx2.obj bin\gf_3vect_dot_prod_sse.obj bin\gf_3vect_mad_avx.obj bin\gf_3vect_mad_avx2.obj bin\gf_3vect_mad_sse.obj bin\gf_4vect_dot_prod_avx.obj bin\gf_4vect_dot_prod_avx2.obj bin\gf_4vect_dot_prod_sse.obj bin\gf_4vect_mad_avx.obj bin\gf_4vect_mad_avx2.obj bin\gf_4vect_mad_sse.obj bin\gf_5vect_dot_prod_avx.obj bin\gf_5vect_dot_prod_avx2.obj bin\gf_5vect_dot_prod_sse.obj bin\gf_5vect_mad_avx.obj bin\gf_5vect_mad_avx2.obj bin\gf_5vect_mad_sse.obj bin\gf_6vect_dot_prod_avx.obj bin\gf_6vect_dot_prod_avx2.obj bin\gf_6vect_dot_prod_sse.obj bin\gf_6vect_mad_avx.obj bin\gf_6vect_mad_avx2.obj bin\gf_6vect_mad_sse.obj bin\gf_vect_dot_prod_avx.obj bin\gf_vect_dot_prod_avx2.obj bin\gf_vect_dot_prod_sse.obj bin\gf_vect_mad_avx.obj bin\gf_vect_mad_avx2.obj bin\gf_vect_mad_sse.obj bin\gf_vect_mul_avx.obj bin\gf_vect_mul_sse.obj
 
-libpath  = c:\openssl\lib     #set to ossl path for tests
-libinc   = c:\openssl\include
-zlibpath   = c:\zlib\lib
-zlibinc   = c:\zlib\include
-INCLUDES = -Ierasure_code -Iinclude -I$(libinc) -I$(zlibinc)
+INCLUDES = -Ierasure_code -Iinclude
 CFLAGS   = -O2 -D ZLIB_WINAPI -D NDEBUG /nologo -D_USE_MATH_DEFINES -Qstd=c99 $(INCLUDES) $(D)
 AFLAGS   = -f win64 $(INCLUDES) $(D)
-CC       = icl
+CC       = cl
 AS       = yasm
 
 lib: bin isa-l.lib
 
+dll: bin lib isa-l.dll
+
 bin: ; -mkdir $@
 
 isa-l.lib: $(objs)
-	lib -out:$@ $?
+  lib -out:$@ $?
+
+isa-l.dll: $(objs)
+  link /DLL /DEF:isa-l.def /out:isa-l.dll $?
 
 {erasure_code}.c.obj:
-	$(CC) $(CFLAGS) /c -Fo$@ $?
+  $(CC) $(CFLAGS) /c -Fo$@ $?
 {erasure_code}.asm.obj:
-	$(AS) $(AFLAGS) -o $@ $?
-
+  $(AS) $(AFLAGS) -o $@ $?
 
 
 .obj.exe:
-	link /out:$@ /nologo /libpath:$(libpath) /libpath:$(zlibpath) isa-l.lib $?
+  link /out:$@ /nologo isa-l.lib $?
 
 # Unit tests
 tests = erasure_code_base_test.exe erasure_code_sse_test.exe erasure_code_test.exe erasure_code_update_test.exe gf_2vect_dot_prod_sse_test.exe gf_3vect_dot_prod_sse_test.exe gf_4vect_dot_prod_sse_test.exe gf_5vect_dot_prod_sse_test.exe gf_6vect_dot_prod_sse_test.exe gf_inverse_test.exe gf_vect_dot_prod_avx_test.exe gf_vect_dot_prod_base_test.exe gf_vect_dot_prod_sse_test.exe gf_vect_dot_prod_test.exe gf_vect_mad_test.exe gf_vect_mul_avx_test.exe gf_vect_mul_base_test.exe gf_vect_mul_sse_test.exe gf_vect_mul_test.exe
@@ -69,10 +69,7 @@ perfs: lib $(perfs)
 $(perfs): $(@B).obj
 
 clean:
-	-if exist *.obj del *.obj
-	-if exist bin\*.obj del bin\*.obj
-	-if exist *.exe del *.exe
-	-if exist isa-l.lib del isa-l.lib
-
-zlib.lib:
-libeay32.lib:
+  -if exist *.obj del *.obj
+  -if exist bin\*.obj del bin\*.obj
+  -if exist *.exe del *.exe
+  -if exist isa-l.lib del isa-l.lib
