@@ -39,7 +39,7 @@
 #	trace - get simulator trace
 #	clean - remove object files
 
-version = 2.13
+version ?= #auto filled on release
 
 CC  = gcc
 AS  = yasm
@@ -87,8 +87,8 @@ ARFLAGS  = $(ARFLAGS_$(arch))
 DEFINES += $(addprefix -D , $D)
 
 O = bin
-lobj  += $(patsubst %.c,%.o,$(patsubst %.asm,%.o,$(lsrc$(arch))))
-objs  = $(addprefix $(O)/,$(lobj))
+lobj  += $(patsubst %.c,%.o,$(patsubst %.asm,%.o,$(lsrc$(arch)) $(lsrc_intrinsic)))
+objs  = $(addprefix $(O)/,$(notdir $(lobj)))
 
 
 lib_name ?= isa-l.a
@@ -108,24 +108,29 @@ exampleswin64 = $(examples)
 perf_testswin64 = $(perf_tests)
 
 # Build and run unit tests, performance tests, etc.
-all_tests = $(sort $(perf_tests$(arch)) $(unit_tests$(arch)) $(examples$(arch)) $(other_tests))
+all_tests = $(notdir $(sort $(perf_tests$(arch)) $(check_tests$(arch)) $(unit_tests$(arch)) $(examples$(arch)) $(other_tests)))
+all_unit_tests = $(notdir $(sort $(check_tests$(arch)) $(unit_tests$(arch))))
 
-$(sort $(unit_tests$(arch))): % : %.c $(tsrc$(arch)) $(lib_name)
-$(sort $(perf_tests$(arch))): % : %.c $(lib_name)
+$(all_unit_tests): % : %.c $(lib_name)
+$(sort $(notdir $(perf_tests$(arch)))): % : %.c $(lib_name)
 $(sort $(examples$(arch))): % : %.c $(lib_name)
 $(sort $(other_tests)): % : %.c $(lib_name)
 
-sim test trace: $(addsuffix .run,$(unit_tests$(arch)))
-perf: $(addsuffix .run,$(perf_tests$(arch)))
+sim test trace: $(addsuffix .run,$(all_unit_tests))
+
+perf: $(addsuffix .run,$(notdir $(perf_tests$(arch))))
 ex:   $(examples$(arch))
 all: lib $(all_tests)
 other: $(other_tests)
-tests: $(unit_tests$(arch))
-perfs: $(perf_tests$(arch))
-test perf: SIM=
+tests: $(all_unit_tests)
+perfs: $(notdir $(perf_tests$(arch)))
+check test perf: SIM=
 trace: SIMFLAGS = -debugtrace
-test sim:
-	@echo Finished running tests 
+check test sim:
+	@echo Finished running $@
+
+#$(foreach c, $^, ./$c )
+#for i in $^; do ./$$i ; done
 
 $(objs): | $(O)
 $(O): ; mkdir -p $(O)
@@ -177,8 +182,8 @@ so_lib_ver  = $(so_lib_inst).$(version)
 soname      = $(so_lib_inst).$(word 1, $(subst ., ,$(version)))
 
 slib: $(so_lib_name)
-aobjs  += $(addprefix $(O)/,$(patsubst %.asm,%.o,$(filter %.asm,$(lsrc$(arch)))))
-shared_objs  += $(addprefix $(O)/shared_ver_,$(patsubst %.c,%.o,$(filter %.c,$(lsrc$(arch)))))
+aobjs  += $(addprefix $(O)/,$(patsubst %.asm,%.o,$(filter %.asm,$(notdir $(lsrc$(arch)) $(lsrc_intrinsic)))))
+shared_objs  += $(addprefix $(O)/shared_ver_,$(patsubst %.c,%.o,$(filter %.c,$(notdir $(lsrc$(arch)) $(lsrc_intrinsic)))))
 
 $(O)/shared_ver_%.o: %.c
 	@echo "  ---> Building shared $< $(msg)"

@@ -63,7 +63,7 @@ u8 gff[256];
 u8 gflog[256];
 u8 gf_mul_table[256 * 256];
 
-void mk_gf_field()
+void mk_gf_field(void)
 {
 	int i;
 	u8 s = 1;
@@ -99,7 +99,7 @@ void gf_vect_dot_prod_ref(int len, int vlen, u8 * v, u8 ** src, u8 * dest)
 	}
 }
 
-int main()
+int main(void)
 {
 	int i, j, k;
 	u8 s, vec[TEST_SOURCES], dest1[TEST_LEN], dest2[TEST_LEN];

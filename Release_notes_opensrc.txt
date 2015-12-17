@@ -1,5 +1,5 @@
 =============================================================================
-v2.13 Intel Intelligent Storage Acceleration Library Release Notes
+v2.14 Intel Intelligent Storage Acceleration Library Release Notes
       Open Source Version
 =============================================================================
 
@@ -18,15 +18,16 @@ RELEASE NOTE CONTENTS
 
 * Perf tests do not run in Windows environment.
 
-* Leaving <unit>/bin directories from builds in unit directories will cause the
-  top-level make build to fail.  Build only in top-level or ensure unit
-  directories are clean of objects and /bin.
-
 * 32-bit lib is not supported in Windows.
 
 =============================================================================
 2. FIXED ISSUES
 =============================================================================
+v2.14
+
+* Building in unit directories is no longer supported removing the issue of
+  leftover object files causing the top-level make build to fail.
+
 v2.10
 
 * Fix for windows register save overlap in gf_{3-6}vect_dot_prod_sse.asm. Only
@@ -36,6 +37,14 @@ v2.10
 =============================================================================
 3. CHANGE LOG & FEATURES ADDED 
 =============================================================================
+v2.14
+
+* Autoconf and autotools build allows easier porting to additional systems.
+  Previous make system still available to embedded users with Makefile.unx.
+
+* Includes update for building on Mac OS X/darwin systems. Add --target=darwin
+  to ./configure step.
+
 v2.13
 
 * Erasure code improvments
